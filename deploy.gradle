@@ -1,0 +1,46 @@
+apply plugin: 'nexus'
+
+modifyPom {
+  project {
+    name 'Jibu Core'
+    description 'jibu-core holds most of the logic for Jibu'
+    url 'http://gaixie.org'
+    packaging 'jar'
+
+    organization {
+      name 'Gaixie.ORG'
+      url 'http://www.gaixie.org'
+    }
+
+    licenses {
+      license {
+        name 'Apache License, Version 2.0'
+        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        distribution 'repo'
+      }
+    }
+
+    scm {
+      url 'https://github.com/gaixie/jibu-core'
+      connection 'scm:git:https://github.com/gaixie/jibu-core.git'
+      developerConnection 'scm:git://github.com/gaixie/jibu-core.git'
+    }
+
+    developers {
+      developer {
+        id 'bitorb'
+        name 'Tommy Wang'
+        email 'bitorb@gmail.com'
+      }
+    }
+  }
+}
+
+nexus {
+  attachJavadoc = true
+  attachSources = true
+  attachTests = false
+  sign = true
+  repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2'
+  snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots'
+}

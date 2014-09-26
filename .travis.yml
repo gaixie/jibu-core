@@ -1,0 +1,33 @@
+language: java
+
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+  - openjdk7
+
+addons:
+  postgresql: "9.3"
+
+env:
+  global:
+    - secure: "iwN47+nEFscRaYevGRao9f+NHE2X2bAu7IKo9D4rUU2L8LvUuTXpSrt1A19FGwInqhNg77bt0Ks0XPwueCe6orNB+IkDFZBx4V8B64lPDBTvqgoHfTWUH5GSJU0cWTRpE9lQpJ9jJht7yBa8qSC51fg0rBltdTQI1xzk2/sOjoY="
+
+before_install:
+  - git clone --quiet https://github.com/gaixie/jibu-schema.git $HOME/jibu-schema
+  - if [[ $TRAVIS_BRANCH == "develop" ]]; then git -C $HOME/jibu-schema/ checkout --track origin/develop; fi
+  
+before_script:
+  - psql -c "CREATE USER jibu_db_user WITH PASSWORD '000000';" -U postgres
+  - psql -c "CREATE DATABASE jibu_db OWNER jibu_db_user ENCODING 'UTF8';" -U postgres
+
+  - cat $HOME/jibu-schema/postgresql/tables/tables*.sql > $HOME/schema.sql
+  - cat $HOME/jibu-schema/postgresql/tables/comments*.sql >> $HOME/schema.sql
+  - psql -U jibu_db_user -d jibu_db -1 -f $HOME/schema.sql
+
+after_success:
+  - .utility/generate-latest-docs.sh
+  
+branches:
+  only:
+    - master
+    - develop
