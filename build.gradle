@@ -23,14 +23,17 @@ repositories {
 apply from: 'deploy.gradle'
 
 dependencies {
-  compile 'org.slf4j:slf4j-api:1.7.7'
+  compile 'org.slf4j:slf4j-api:1.7.10'
   compile 'commons-dbutils:commons-dbutils:1.6'
-  compile 'commons-dbcp:commons-dbcp:1.4'
-  compile 'com.google.inject:guice:4.0-beta4'
-  compile 'org.gaixie.cache:cache:1.0.0'
+  compile 'org.apache.commons:commons-dbcp2:2.1'
+  compile 'com.google.inject:guice:4.0-beta5'
   runtime 'ch.qos.logback:logback-classic:1.1.2'
-  runtime 'org.postgresql:postgresql:9.3-1102-jdbc41'
-  testCompile 'junit:junit:4.11'
+  runtime 'org.postgresql:postgresql:9.4-1201-jdbc41'
+  testCompile 'junit:junit:4.12'
+}
+
+compileJava {
+  options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
 javadoc {
@@ -39,6 +42,6 @@ javadoc {
   project.configure(options) {
     memberLevel = org.gradle.external.javadoc.JavadocMemberLevel.PROTECTED
     charSet = 'UTF-8'
-    bottom = 'Copyright © 2014 <a href="http://www.gaixie.org">Gaixie.ORG</a>. All rights reserved.'
+    bottom = 'Copyright © 2014-2015 <a href="http://www.gaixie.org">Gaixie.ORG</a>. All rights reserved.'
   }
 }

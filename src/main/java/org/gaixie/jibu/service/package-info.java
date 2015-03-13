@@ -15,7 +15,7 @@
  */
 
 /**
- * 提供系统服务层接口。 
+ * 提供系统供外部调用的服务层接口。
  *
  */
 package org.gaixie.jibu.service;

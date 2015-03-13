@@ -21,8 +21,8 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.commons.dbcp.BasicDataSourceFactory;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.apache.commons.dbcp2.BasicDataSourceFactory;
 import org.gaixie.jibu.JibuConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +49,8 @@ public class ConnectionUtils {
      *
      * @return 最大 Active 连接数
      */
-    public static int getMaxActive() {
-        return ((BasicDataSource) dataSource).getMaxActive();
+    public static int getMaxTotal() {
+        return ((BasicDataSource) dataSource).getMaxTotal();
     }
 
     /**
