@@ -51,14 +51,64 @@ public class JibuTestSupport {
 
     /**
      * 测试用例运行前需要清空所有表的数据。
+     *
      * 清表的顺序参考：
+     * http://gaixie.org/jibu/schema-doc/snapshot/deletionOrder.txt
+     * https://raw.githubusercontent.com/gaixie/jibu-schema/develop/postgresql/data/truncate-all.sql
      */
     protected void clearTable() {
+        StringBuilder sb = new StringBuilder();
+        //--------------------------------------------
+        //  执行下面的命令生成清表的Java语句：
+        //  curl http://gaixie.org/jibu/schema-doc/snapshot/deletionOrder.txt | sed 's/^/sb.append("TRUNCATE /;s/$/ CASCADE;");/'
+        //  也可以执行通过 truncate-all.sql 来清空数据。
+        //  more ./postgresql/data/truncate-all.sql | sed '/^$\|^\s*\(-\|$\)/d;s/.*/sb.append("&\\n");/'
+        //  mac osx 下 sed 语法和 linux 不同，执行下面的命令：
+        //  more ./postgresql/data/truncate-all.sql | sed '/^[[:blank:]]*-/d;/^[[:blank:]]*$/d;s/.*/sb.append("&\\n");/'
+        //--------------------------------------------
+        sb.append("truncate\n");
+        sb.append("schema_changes,\n");
+        sb.append("tokens,\n");
+        sb.append("userbase;\n");
+
         Connection conn = null;
         try {
             conn = ConnectionUtils.getConnection();
             QueryRunner run = new QueryRunner();
-            run.update(conn, "DELETE from schema_changes");
+            run.update(conn, sb.toString());
+            DbUtils.commitAndClose(conn);
+        } catch(SQLException e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            System.out.println(e.getMessage());
+        }
+    }
+
+    /**
+     * 初始化基本的测试数据。
+     *
+     * 测试数据可参考：
+     * https://raw.githubusercontent.com/gaixie/jibu-schema/develop/postgresql/data/test.sql
+     */
+    protected void initBaseTestData() {
+        StringBuilder sb = new StringBuilder();
+        //--------------------------------------------
+        //  从 github.com 上 clone jibu-schema 项目后，
+        //  从 jibu-schema 项目根目录下执行下面的语句，可生成初始化测试数据的Java语句：
+        //  more ./postgresql/data/test.sql | sed '/^$\|^\s*\(-\|$\)/d;s/.*/sb.append("&\\n");/'
+        //  mac osx 下 sed 语法和 linux 不同，执行下面的命令：
+        //  more ./postgresql/data/test.sql | sed '/^[[:blank:]]*-/d;/^[[:blank:]]*$/d;s/.*/sb.append("&\\n");/'
+        //--------------------------------------------
+        sb.append("insert into userbase(username,password,fullname,type,emailaddress,invited_by) values ('test1','96e79218965eb72c92a549dd5a330112','Manager', 4,'test1@gaixie.org',currval('userbase_id_seq'));\n");
+        sb.append("insert into userbase(username,password,fullname,type,emailaddress,invited_by) values ('test2','96e79218965eb72c92a549dd5a330112','Sponsor', 2,'test2@gaixie.org',(select id from userbase where username = 'test1'));\n");
+        sb.append("insert into userbase(username,password,fullname,type,emailaddress,invited_by) values ('test3','96e79218965eb72c92a549dd5a330112','Register',1,'test3@gaixie.org',(select id from userbase where username = 'test2'));\n");
+        sb.append("insert into tokens(value,type,expiration_ts,send_to,created_by) values ('5f4dcc3b5aa765d61d8327deb882cf99','password',now() + interval '1 day','test3@gaixie.org',(select id from userbase where username = 'test3'));\n");
+        sb.append("insert into tokens(value,type,expiration_ts,send_to,created_by) values ('9de4a97425678c5b1288aa70c1669a64','register',now() + interval '7 day','test5@gaixie.org',(select id from userbase where username = 'test2'));\n");
+
+        Connection conn = null;
+        try {
+            conn = ConnectionUtils.getConnection();
+            QueryRunner run = new QueryRunner();
+            run.update(conn, sb.toString());
             DbUtils.commitAndClose(conn);
         } catch(SQLException e) {
             DbUtils.rollbackAndCloseQuietly(conn);

@@ -18,6 +18,9 @@ package org.gaixie.jibu.dao;
 
 import com.google.inject.AbstractModule;
 
+import org.gaixie.jibu.dao.UserDAO;
+import org.gaixie.jibu.dao.TokenDAO;
+import org.gaixie.jibu.dao.impl.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +45,8 @@ public class DAOModule extends AbstractModule {
     @Override
     protected void configure() {
         if ("PostgreSQL".equalsIgnoreCase(databaseType)){
+            bind(UserDAO.class).to(UserDAOPgSQL.class);
+            bind(TokenDAO.class).to(TokenDAOPgSQL.class);
         }
     }
 }

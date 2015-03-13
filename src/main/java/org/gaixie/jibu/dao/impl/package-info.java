@@ -14,20 +14,8 @@
  * limitations under the License.
  */
 
-package org.gaixie.jibu.service;
-
-import com.google.inject.AbstractModule;
-
-import org.gaixie.jibu.service.UserService;
-import org.gaixie.jibu.service.impl.*;
-
 /**
- * 系统服务层的 Bind 类。
+ * 提供系统数据访问层的接口的实现。
  *
  */
-public class ServiceModule extends AbstractModule {
-
-    @Override protected void configure() {
-        bind(UserService.class).to(UserServiceImpl.class);
-    }
-}
+package org.gaixie.jibu.dao.impl;

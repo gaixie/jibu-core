@@ -18,9 +18,9 @@ package org.gaixie.jibu;
 
 
 /**
- * A base exception class for Jibu.
+ * A base unchecked exception class for Jibu.
  */
-public class JibuException extends Exception {
+public class JibuException extends RuntimeException {
     public JibuException() {
         super();
     }
