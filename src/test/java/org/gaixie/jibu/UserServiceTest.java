@@ -10,6 +10,7 @@ import org.gaixie.jibu.utils.ConnectionUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -73,6 +74,8 @@ public class UserServiceTest extends JibuTestSupport {
         token = userService.generateToken("regist", "test1", "newRegist@gaixie.org");
         Assert.assertNotNull(token);
         token = userService.generateToken("password", "test1", null);
+        Assert.assertNotNull(token);
+        token = userService.generateToken("signin", "test1", null);
         Assert.assertNotNull(token);
     }
 
@@ -215,6 +218,36 @@ public class UserServiceTest extends JibuTestSupport {
         // 如果模糊匹配的字符串为 null ，则查处全部的3个用户。
         users = userService.find(null,crt);
         Assert.assertTrue(3 == crt.getTotal());
+    }
+
+    @Test
+    public void signinByToken() {
+        // 使用初始化好的用于自动登录的 token
+        String tokenValue = "cc0256df40cbc924af2b31aeccb869b0";
+        // 用户名不匹配，返回 null
+        Token token = userService.signinByToken("test3",tokenValue);
+        Assert.assertNull(token);
+        token = userService.signinByToken("test1",tokenValue);
+        Assert.assertNotNull(token);
+
+        // 更新后的 token，有效期大于更新前的 token
+        Token updateToken = userService.signinByToken("test1",tokenValue);
+        Assert.assertNotNull(updateToken);
+        Timestamp ts = updateToken.getExpiration_ts();
+        Assert.assertTrue(ts.after(token.getExpiration_ts()));
+    }
+
+    @Test
+    public void signout() {
+        // 使用初始化好的用于自动登录的 token
+        String tokenValue = "cc0256df40cbc924af2b31aeccb869b0";
+        Token token = userService.signinByToken("test1",tokenValue);
+        Assert.assertNotNull(token);
+
+        // signout后的不能自动登录
+        userService.signout("test1",tokenValue);
+        token  = userService.signinByToken("test1",tokenValue);
+        Assert.assertNull(token);
     }
 
     @After

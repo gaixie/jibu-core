@@ -116,8 +116,7 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
-    public Token generateToken(String type, String createdBy, String sendTo)
-        throws JibuException {
+    public Token generateToken(String type, String createdBy, String sendTo) {
         Connection conn = null;
         Token token = null;
         int duration = 0;
@@ -139,6 +138,11 @@ public class UserServiceImpl implements UserService {
                 // 要求密码找回的 Token 有效期为 1 天
                 // 密码找回的 Token 的 send_to 为 创建人邮箱
                 duration = +1;
+                token.setSend_to(user.getEmailaddress());
+            } else if (type.equals("signin")) {
+                // 要求自动登录的 Token 有效期为 14 天
+                // 自动登录的 Token 的 send_to 为 创建人邮箱
+                duration = +14;
                 token.setSend_to(user.getEmailaddress());
             } else {
                 return null;
@@ -216,7 +220,6 @@ public class UserServiceImpl implements UserService {
         } finally {
             DbUtils.closeQuietly(conn);
         }
-
     }
 
     /**
@@ -236,5 +239,54 @@ public class UserServiceImpl implements UserService {
             DbUtils.closeQuietly(conn);
         }
         return users;
+    }
+
+    public Token signinByToken(String username, String tokenValue) {
+        Connection conn = null;
+        Token token = null;
+        User user = null;
+        try {
+            conn = ConnectionUtils.getConnection();
+            user = userDAO.get(conn,username);
+            if (user != null) {
+                token = tokenDAO.get(conn, user.getId(), tokenValue);
+                if (token != null) {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.add(calendar.DAY_OF_MONTH, 14);
+                    long time = calendar.getTimeInMillis();
+                    Timestamp ts = new Timestamp(time);
+                    token.setExpiration_ts(ts);
+                    tokenDAO.update(conn,token);
+                    DbUtils.commitAndClose(conn);
+                }
+            }
+        } catch(SQLException e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            logger.error(e.getMessage());
+            return null;
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+        return token;
+    }
+
+    public void signout(String username, String tokenValue) {
+        Connection conn = null;
+        try {
+            conn = ConnectionUtils.getConnection();
+            User user = userDAO.get(conn,username);
+            if (user != null) {
+                Token token = tokenDAO.get(conn, user.getId(), tokenValue);
+                if (token != null) {
+                    tokenDAO.delete(conn,token);
+                    DbUtils.commitAndClose(conn);
+                }
+            }
+        } catch(SQLException e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            logger.error(e.getMessage());
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
     }
 }

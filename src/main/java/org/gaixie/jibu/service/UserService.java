@@ -81,4 +81,21 @@ public interface UserService {
      * @return 一个包含 User 的 List，无值 size()==0，永远不会返回 null。
      */
     public List<User> find(String str, Criteria criteria);
+
+    /**
+     * 通过 Token 及对应的 username 进行登录验证。
+     *
+     * @param username 要登录的用户名。
+     * @param tokenValue 用于自动登录的 token 值。
+     * @return 一个过期时间被重置的 Token，如果登录验证失败，返回null。
+     */
+    public Token signinByToken(String username, String tokenValue);
+
+    /**
+     * 用户登出时清空自动登录的 token。
+     *
+     * @param username 要登出的用户名。
+     * @param tokenValue 用于自动登录的 token 值。
+     */
+    public void signout(String username, String tokenValue);
 }

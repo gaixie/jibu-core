@@ -58,4 +58,25 @@ public class TokenDAOPgSQL implements TokenDAO {
                    , "DELETE FROM tokens WHERE id=?"
                    , token.getId());
     }
+
+    public Token get(Connection conn, int userId, String value) throws SQLException {
+        ResultSetHandler<Token> h = new BeanHandler<Token>(Token.class);
+        return run.query(conn
+                         , "SELECT id,value,type,expiration_ts,send_to,created_by FROM tokens WHERE created_by=? and value=? and expiration_ts > now()"
+                         , h
+                         , userId
+                         , value);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * token.getId() 不能为 null。</p>
+     */
+    public void update(Connection conn, Token token) throws SQLException {
+        run.update(conn
+                   , "UPDATE tokens set expiration_ts=? WHERE id=?"
+                   , token.getExpiration_ts()
+                   , token.getId());
+    }
 }
