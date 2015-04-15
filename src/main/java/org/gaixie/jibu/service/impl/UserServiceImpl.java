@@ -123,7 +123,12 @@ public class UserServiceImpl implements UserService {
 
         try {
             conn = ConnectionUtils.getConnection();
-            User user = userDAO.get(conn,createdBy);
+            User user = null;
+            // 密码重置的 createBy 为 null，用 sendTo 取得 User
+            if (type.equals("password"))
+                user = userDAO.getByEmail(conn,sendTo);
+            else
+                user = userDAO.get(conn,createdBy);
             if (user == null) return null;
 
             token = new Token();
@@ -138,7 +143,7 @@ public class UserServiceImpl implements UserService {
                 // 要求密码找回的 Token 有效期为 1 天
                 // 密码找回的 Token 的 send_to 为 创建人邮箱
                 duration = +1;
-                token.setSend_to(user.getEmailaddress());
+                token.setSend_to(sendTo);
             } else if (type.equals("signin")) {
                 // 要求自动登录的 Token 有效期为 14 天
                 // 自动登录的 Token 的 send_to 为 创建人邮箱
@@ -176,7 +181,7 @@ public class UserServiceImpl implements UserService {
     public void regist(User user, String tokenValue) throws JibuException {
         Connection conn = null;
         if (null == user.getPassword())
-            throw new JibuException("[0100]: password 为 null。");
+            throw new JibuException("[0100]: password 不能为空。");
 
         try {
             conn = ConnectionUtils.getConnection();
@@ -285,6 +290,43 @@ public class UserServiceImpl implements UserService {
         } catch(SQLException e) {
             DbUtils.rollbackAndCloseQuietly(conn);
             logger.error(e.getMessage());
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+    }
+
+    public void resetPassword(String password, String tokenValue)
+        throws JibuException {
+        if (password == null || password.isEmpty()) {
+            throw new JibuException("[0100]: password 不能为空。");
+        }
+
+        Connection conn = null;
+        try {
+            conn = ConnectionUtils.getConnection();
+            Token token = tokenDAO.get(conn,tokenValue);
+
+            if (token == null)
+                throw new JibuException("[0101]: token 不存在。");
+            // token 的类型必须时 password
+            if (!"password".equals(token.getType()))
+                throw new JibuException("[0102]: token 不存在。");
+
+            Calendar calendar = Calendar.getInstance();
+            long time = calendar.getTimeInMillis();
+            Timestamp ts = new Timestamp(time);
+            if(ts.after(token.getExpiration_ts()))
+                throw new JibuException("[0103]: token 已过期。");
+
+            User user = new User();
+            String cryptpassword = MD5.encodeString(password,null);
+            user.setPassword(cryptpassword);
+            user.setId(token.getCreated_by());
+            userDAO.update(conn,user);
+            DbUtils.commitAndClose(conn);
+        } catch(SQLException e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            throw new RuntimeException("[0002]: 未知的数据库访问错误。", e);
         } finally {
             DbUtils.closeQuietly(conn);
         }

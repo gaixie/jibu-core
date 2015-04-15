@@ -98,4 +98,13 @@ public interface UserService {
      * @param tokenValue 用于自动登录的 token 值。
      */
     public void signout(String username, String tokenValue);
+
+    /**
+     * 通过一个 Token value ，进行密码重置。
+     *
+     * @param password 要重置的新密码。
+     * @param tokenValue Token value。
+     * @exception JibuException password 为null或者空串，tokenValue 无效或者已过期时抛出。
+     */
+    public void resetPassword(String password, String tokenValue) throws JibuException;
 }

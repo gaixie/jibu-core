@@ -39,7 +39,7 @@ public class UserServiceTest extends JibuTestSupport {
 
     @Test
     public void get() {
-        User user = userService.get("test1");
+        User user = userService.get("qq");
         Assert.assertNotNull(user);
         User userbyid = userService.get(user.getId());
         Assert.assertTrue(user.equals(userbyid));
@@ -48,13 +48,13 @@ public class UserServiceTest extends JibuTestSupport {
     @Test
     public void login() {
         // 成功用用户名登录
-        User user = userService.get("test1", "111111");
+        User user = userService.get("qq", "111111");
         Assert.assertNotNull(user);
         // 成功用邮箱登录
-        user = userService.get("test1@gaixie.org", "111111");
+        user = userService.get("nodto@qq.com", "111111");
         Assert.assertNotNull(user);
         // 登录失败
-        user = userService.get("test1@gaixie.org", "wrongpwd");
+        user = userService.get("nodto@qq.com", "wrongpwd");
         Assert.assertNull(user);
     }
 
@@ -62,20 +62,20 @@ public class UserServiceTest extends JibuTestSupport {
     public void generateToken() {
         Token token = null;
         // 不存在的用户得到的 token 为 null
-        token = userService.generateToken("regist", "wrongusername", "newRegist@gaixie.org");
+        token = userService.generateToken("regist", "wrongusername", "newRegist@test");
         Assert.assertNull(token);
         // 新注册用户的接受 token 的邮箱不能为空，否则返回的 token 为 null
-        token = userService.generateToken("regist", "test1", null);
+        token = userService.generateToken("regist", "qq", null);
         Assert.assertNull(token);
         // 无效的 Token type 返回的 token 为 null
-        token = userService.generateToken("wrongtype", "test1", "newRegist@gaixie.org");
+        token = userService.generateToken("wrongtype", "qq", "newRegist@test");
         Assert.assertNull(token);
 
-        token = userService.generateToken("regist", "test1", "newRegist@gaixie.org");
+        token = userService.generateToken("regist", "qq", "newRegist@test");
         Assert.assertNotNull(token);
-        token = userService.generateToken("password", "test1", null);
+        token = userService.generateToken("password", "qq", "nodto@qq.com");
         Assert.assertNotNull(token);
-        token = userService.generateToken("signin", "test1", null);
+        token = userService.generateToken("signin", "qq", null);
         Assert.assertNotNull(token);
     }
 
@@ -114,9 +114,6 @@ public class UserServiceTest extends JibuTestSupport {
 
     @Test
     public void registTokenValueWrong() {
-        // 使用初始化好的用于用户注册的 token
-        String tokenValue = "9de4a97425678c5b1288aa70c1669a64";
-
         User user = new User();
         user.setUsername("newRegist");
         user.setPassword("password");
@@ -129,9 +126,6 @@ public class UserServiceTest extends JibuTestSupport {
 
     @Test
     public void registTokenTypeWrong() {
-        // 使用初始化好的用于用户注册的 token
-        String tokenValue = "9de4a97425678c5b1288aa70c1669a64";
-
         User user = new User();
         user.setUsername("newRegist");
         user.setPassword("password");
@@ -149,7 +143,7 @@ public class UserServiceTest extends JibuTestSupport {
         String tokenValue = "9de4a97425678c5b1288aa70c1669a64";
 
         User user = new User();
-        user.setUsername("test1");
+        user.setUsername("qq");
         user.setPassword("password");
 
         // test1 用户已存在
@@ -163,10 +157,10 @@ public class UserServiceTest extends JibuTestSupport {
         // 使用初始化好的用于用户注册的 token
         String tokenValue = "9de4a97425678c5b1288aa70c1669a64";
 
-        // 修改token的 send_to 地址为已存在用户 test1 的邮件地址 test1@gaixie.org
+        // 修改token的 send_to 地址为已存在用户 test1 的邮件地址 nodto@qq.com
         Connection conn = ConnectionUtils.getConnection();
         QueryRunner run = new QueryRunner();
-        String sql = "update tokens set send_to = 'test1@gaixie.org' where value = '"+tokenValue+"'";
+        String sql = "update tokens set send_to = 'nodto@qq.com' where value = '"+tokenValue+"'";
         run.update(conn, sql);
         DbUtils.commitAndClose(conn);
 
@@ -197,8 +191,8 @@ public class UserServiceTest extends JibuTestSupport {
         // jibu_db=> select username, fullname from userbase where username||fullname ~ 'er';
         //  username | fullname
         // ----------+----------
-        //  test1    | Manager
-        //  test3    | Register
+        //  qq       | Manager
+        //  sohu     | Register
         // (2 rows)
         List<User> users = userService.find("er", null);
         Assert.assertTrue(2 == users.size());
@@ -225,13 +219,13 @@ public class UserServiceTest extends JibuTestSupport {
         // 使用初始化好的用于自动登录的 token
         String tokenValue = "cc0256df40cbc924af2b31aeccb869b0";
         // 用户名不匹配，返回 null
-        Token token = userService.signinByToken("test3",tokenValue);
+        Token token = userService.signinByToken("sohu",tokenValue);
         Assert.assertNull(token);
-        token = userService.signinByToken("test1",tokenValue);
+        token = userService.signinByToken("qq",tokenValue);
         Assert.assertNotNull(token);
 
         // 更新后的 token，有效期大于更新前的 token
-        Token updateToken = userService.signinByToken("test1",tokenValue);
+        Token updateToken = userService.signinByToken("qq",tokenValue);
         Assert.assertNotNull(updateToken);
         Timestamp ts = updateToken.getExpiration_ts();
         Assert.assertTrue(ts.after(token.getExpiration_ts()));
@@ -241,13 +235,65 @@ public class UserServiceTest extends JibuTestSupport {
     public void signout() {
         // 使用初始化好的用于自动登录的 token
         String tokenValue = "cc0256df40cbc924af2b31aeccb869b0";
-        Token token = userService.signinByToken("test1",tokenValue);
+        Token token = userService.signinByToken("qq",tokenValue);
         Assert.assertNotNull(token);
 
         // signout后的不能自动登录
-        userService.signout("test1",tokenValue);
-        token  = userService.signinByToken("test1",tokenValue);
+        userService.signout("qq",tokenValue);
+        token  = userService.signinByToken("qq",tokenValue);
         Assert.assertNull(token);
+    }
+
+    @Test (expected = JibuException.class)
+    public void resetPasswordExpired() throws SQLException {
+        // 使用初始化好的用于密码重置的 token (test3)
+        String tokenValue = "5f4dcc3b5aa765d61d8327deb882cf99";
+
+        // 修改token的有效期，设置为当前时间（之前初始化为1天后），让token过期。
+        Connection conn = ConnectionUtils.getConnection();
+        QueryRunner run = new QueryRunner();
+        String sql = "update tokens set expiration_ts = now() where value = '"+tokenValue+"'";
+        run.update(conn, sql);
+        DbUtils.commitAndClose(conn);
+        userService.resetPassword("password", tokenValue);
+    }
+
+    @Test
+    public void resetPasswordIsNull() {
+        // 使用初始化好的用于密码重置的 token (test3)
+        String tokenValue = "5f4dcc3b5aa765d61d8327deb882cf99";
+
+        // 密码为空抛出的 exception
+        thrown.expect(JibuException.class);
+        thrown.expectMessage("[0100]");
+        userService.resetPassword(null, tokenValue);
+    }
+
+    @Test
+    public void resetPasswordTokenValueWrong() {
+        // 不存在的 token 抛出的 exception
+        thrown.expect(JibuException.class);
+        thrown.expectMessage("[0101]");
+        userService.resetPassword("password", "wrongtokenvalue");
+    }
+
+    @Test
+    public void resetPasswordTokenTypeWrong() {
+        // token 存在但类型不对时抛出的 exception
+        // 使用初始化语句中用于用户注册的 tokenvalue
+        thrown.expect(JibuException.class);
+        thrown.expectMessage("[0102]");
+        userService.resetPassword("password", "9de4a97425678c5b1288aa70c1669a64");
+    }
+
+    @Test
+    public void resetPassword() throws Exception {
+        // 使用初始化好的用于密码重置的 token (test3)
+        String tokenValue = "5f4dcc3b5aa765d61d8327deb882cf99";
+
+        userService.resetPassword("newPassword", tokenValue);
+        User user = userService.get("sohu", "newPassword");
+        Assert.assertNotNull(user);
     }
 
     @After

@@ -77,6 +77,20 @@ public class UserDAOPgSQL implements UserDAO {
      * <p>
      * 安全考虑，返回 User 的 password 属性为 null。</p>
      */
+    public User getByEmail( Connection conn, String email) throws SQLException {
+        ResultSetHandler<User> h = new BeanHandler<User>(User.class);
+        String sql =
+            "SELECT id,username,fullname,type,emailaddress,registered_ts,invited_by,enabled \n"+
+            "FROM userbase \n"+
+            "WHERE emailaddress=?";
+        return run.query(conn, sql, h, email);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 安全考虑，返回 User 的 password 属性为 null。</p>
+     */
     public User get(Connection conn,String loginname, String cryptpassword) throws SQLException {
         ResultSetHandler<User> h = new BeanHandler<User>(User.class);
         String sql =
@@ -127,5 +141,25 @@ public class UserDAOPgSQL implements UserDAO {
         sql = SQLBuilder.getSortClause(sql,criteria);
         sql = SQLBuilder.getPagingClause(sql,criteria);
         return run.query(conn, sql, h);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 除 id 属性以外，所有非空的属性将会被更新至数据库中。</p>
+     */
+    public void update(Connection conn, User user) throws SQLException {
+        String sql = "UPDATE userbase \n";
+        Integer id = user.getId();
+        user.setId(null);
+        try {
+            String s = SQLBuilder.beanToSQLClause(user,",");
+            sql = sql + SQLBuilder.getSetClause(s) +"\n"+
+                "WHERE id=? ";
+        } catch (JibuException e) {
+            throw new SQLException(e.getMessage());
+        }
+        user.setId(id);
+        run.update(conn, sql, id);
     }
 }

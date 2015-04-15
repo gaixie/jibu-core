@@ -52,6 +52,17 @@ public interface UserDAO {
     public User get(Connection conn, String username) throws SQLException;
 
     /**
+     * 通过 email 得到一个 User。
+     *
+     * @param conn 一个有效的数据库链接。
+     * @param email 用户主邮箱。
+     *
+     * @throws SQLException SQLException
+     * @return 一个 User，如果没有对应的数据，返回 null。
+     */
+    public User getByEmail(Connection conn, String email) throws SQLException;
+
+    /**
      * 通过 loginname 和密文 password 得到一个 User。
      *
      * @param conn 一个有效的数据库链接。
@@ -84,4 +95,14 @@ public interface UserDAO {
      * @return 一个包含 User 的 List，无值 size()==0，永远不会返回 null。
      */
     public List<User> find(Connection conn, String str, Criteria criteria) throws SQLException;
+
+    /**
+     * 更新 User。
+     *
+     * @param conn 一个有效的数据库链接。
+     * @param user 所有非空的属性除了 id 以外都会被更新。
+     *
+     * @throws SQLException SQLException
+     */
+    public void update(Connection conn, User user) throws SQLException;
 }
