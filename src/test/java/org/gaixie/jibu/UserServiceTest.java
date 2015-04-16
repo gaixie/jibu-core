@@ -192,7 +192,7 @@ public class UserServiceTest extends JibuTestSupport {
         //  username | fullname
         // ----------+----------
         //  qq       | Manager
-        //  sohu     | Register
+        //  outlook  | Register
         // (2 rows)
         List<User> users = userService.find("er", null);
         Assert.assertTrue(2 == users.size());
@@ -219,7 +219,7 @@ public class UserServiceTest extends JibuTestSupport {
         // 使用初始化好的用于自动登录的 token
         String tokenValue = "cc0256df40cbc924af2b31aeccb869b0";
         // 用户名不匹配，返回 null
-        Token token = userService.signinByToken("sohu",tokenValue);
+        Token token = userService.signinByToken("outlook",tokenValue);
         Assert.assertNull(token);
         token = userService.signinByToken("qq",tokenValue);
         Assert.assertNotNull(token);
@@ -292,7 +292,7 @@ public class UserServiceTest extends JibuTestSupport {
         String tokenValue = "5f4dcc3b5aa765d61d8327deb882cf99";
 
         userService.resetPassword("newPassword", tokenValue);
-        User user = userService.get("sohu", "newPassword");
+        User user = userService.get("outlook", "newPassword");
         Assert.assertNotNull(user);
     }
 
