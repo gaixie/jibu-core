@@ -41,8 +41,8 @@ public class JavaMailSender {
      * @param text 邮件正文。
      */
     public void send(String recipients, String subj, String text) {
-        String usr = JibuConfig.getProperty("mail.username");
-        String pwd = JibuConfig.getProperty("mail.password");
+        final String usr = JibuConfig.getProperty("mail.username");
+        final String pwd = JibuConfig.getProperty("mail.password");
         Session session =
             Session.getDefaultInstance(JibuConfig.getProperties(),
                                        new javax.mail.Authenticator() {
