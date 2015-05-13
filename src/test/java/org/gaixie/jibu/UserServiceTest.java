@@ -296,6 +296,35 @@ public class UserServiceTest extends JibuTestSupport {
         Assert.assertNotNull(user);
     }
 
+    @Test
+    public void updateUsernameExist() throws SQLException {
+        // 修改用户名 qq 为一个已存在的用户名 sina
+        User user = userService.get("qq");
+
+        User updateUser = new User();
+        updateUser.setUsername("sina");
+        updateUser.setId(user.getId());
+
+        // 邮件地址已存在
+        thrown.expect(JibuException.class);
+        thrown.expectMessage("[0104]");
+        userService.update(updateUser);
+    }
+
+    @Test
+    public void update() throws SQLException {
+        // 修改 qq 用户的全名、邮箱、密码
+        User user = userService.get("qq");
+
+        User updateUser = new User();
+        updateUser.setId(user.getId());
+        updateUser.setFullname("Nodto");
+        updateUser.setEmailaddress("nodto@sohu.com");
+        updateUser.setPassword("newPassword");
+
+        userService.update(updateUser);
+    }
+
     @After
     public void tearDown() {
 	clearTable();

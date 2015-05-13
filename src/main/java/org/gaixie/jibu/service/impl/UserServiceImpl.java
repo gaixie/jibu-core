@@ -219,7 +219,7 @@ public class UserServiceImpl implements UserService {
         } catch(SQLException e) {
             DbUtils.rollbackAndCloseQuietly(conn);
             if (e.getMessage().contains("unique constraint"))
-                throw new JibuException("[0104]: 注册的用户名或邮箱已存在。", e);
+                throw new JibuException("[0104]: 用户名或邮箱已存在。", e);
             else
                 throw new RuntimeException("[0002]: 未知的数据库访问错误。", e);
         } finally {
@@ -327,6 +327,28 @@ public class UserServiceImpl implements UserService {
         } catch(SQLException e) {
             DbUtils.rollbackAndCloseQuietly(conn);
             throw new RuntimeException("[0002]: 未知的数据库访问错误。", e);
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+    }
+
+    public void update(User user) throws JibuException {
+        Connection conn = null;
+        if (null != user.getPassword()) {
+            String cryptpassword = MD5.encodeString(user.getPassword(),null);
+            user.setPassword(cryptpassword);
+        }
+
+        try {
+            conn = ConnectionUtils.getConnection();
+            userDAO.update(conn,user);
+            DbUtils.commitAndClose(conn);
+        } catch(SQLException e) {
+            DbUtils.rollbackAndCloseQuietly(conn);
+            if (e.getMessage().contains("unique constraint"))
+                throw new JibuException("[0104]: 用户名或邮箱已存在。", e);
+            else
+                throw new RuntimeException("[0002]: 未知的数据库访问错误。", e);
         } finally {
             DbUtils.closeQuietly(conn);
         }

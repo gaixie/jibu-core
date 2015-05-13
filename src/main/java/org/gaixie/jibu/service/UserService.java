@@ -107,4 +107,14 @@ public interface UserService {
      * @exception JibuException password 为null或者空串，tokenValue 无效或者已过期时抛出。
      */
     public void resetPassword(String password, String tokenValue) throws JibuException;
+
+    /**
+     * 修改 User 。
+     * <p>
+     * 如果要修改密码，user.getPassword() 应该是 hash 前的密码，也就是明文密码 。
+     * 所有非 null 的属性将被更新。id 属性不能为 null，且不会被更新。</p>
+     * @param user User
+     * @exception JibuException 修改失败时抛出。
+     */
+    public void update(User user) throws JibuException;
 }
