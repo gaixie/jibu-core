@@ -4,7 +4,7 @@ apply plugin: 'signing'
 
 group = 'org.gaixie.jibu'
 archivesBaseName = "jibu-core"
-version = '0.1'
+version = '0.2-SNAPSHOT'
 
 buildscript {
   repositories {
